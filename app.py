@@ -13,7 +13,7 @@ def check_newblock(): # main application loop
     global lastBlock
     if lastBlock != get_CurrentBlock():
         lastBlock = get_CurrentBlock()
-        print(lastBlock)
+        #print(lastBlock)
         info_labelProgress.config(text="")
         check_transactions()
     else:
@@ -27,6 +27,7 @@ def check_newblock(): # main application loop
     root.after((connect_interval*1000), check_newblock) # main program logic loop
 
 
+# function to fetch settings from config file
 def get_config_settings():
     config_file = ConfigParser()
     config_file.read('monitor.cfg')
@@ -56,15 +57,15 @@ def get_config_settings():
         trans_list.insert(trans_count, item)
         trans_count = trans_count + 1
 
-
+# Fetch latest confirmed block number
 def get_CurrentBlock():
     rpc_client = AuthServiceProxy(f"http://{rpc_list[0]}:{rpc_list[1]}@{rpc_list[2]}:" + rpc_list[3], timeout=int(rpc_list[4]))
     block = rpc_client.getblockcount()
     return block
 
 
+# Check if transaction outputs have been spent or are currently in mempool
 def check_transactions():
-    # verify all UTXOs in list
     x = 0
     global anySpent
     anySpent = False
@@ -75,20 +76,18 @@ def check_transactions():
         is_utxo_valid = rpc_client.gettxout(transID[0], int(transID[1]))
 
         if is_utxo_valid:
-            print('\nValid: ' + transID[2])
+            pass
+            # print('\nValid: ' + transID[2])
         else:
-            print('Not valid' + transID[2])
+            # print('Not valid' + transID[2])
             send_sms_message(x,transID[2])
             anySpent = True
         x = x + 1
 
     if anySpent == True:
-        #message = 'One of your transactions was spent.'
         message=''
         set_image("images/128x128x.png")
     else:
-
-        #message = 'All of your monitored transactions are unspent'
         message=''
         set_image("images/128x128.png")
     info_label_message.config(text=str(message))
@@ -97,12 +96,12 @@ def check_transactions():
 def set_image(myImage):
     global img
     img = ImageTk.PhotoImage(Image.open(myImage))
-    labelImage = ttk.Label(root, text="image here", image=img)
+    labelImage = ttk.Label(root, image=img)
     labelImage.place(x=100, y=275)
 
 
 def open_config_file():
-    subprocess.call(['open', '-a', 'TextEdit', 'Monitor.cfg'])
+    subprocess.call(['open', '-a', 'TextEdit', 'monitor.cfg'])
 
 
 def send_sms_message(number, wallet):
@@ -141,8 +140,6 @@ def restart():
     labelInterval.config(text=str(connect_interval) + " sec")
     check_transactions()
     check_newblock()
-
-
 
 
 
@@ -251,7 +248,7 @@ sms_labelGateway.place(x=375, y=370)
 sms_entryGateway= ttk.Label(root, text=sms_list[2], font=("Helvetica 13"), justify="left", width=43)
 sms_entryGateway.place(x=485, y=370)
 
-info_label_message = ttk.Label(root, text="", font=("Helvetica 15 bold"))
+info_label_message = ttk.Label(root, text="sfdgsdfgs", font=("Helvetica 15 bold"))
 info_label_message.place(x=10, y=400)
 
 info_labelProgress = tk.Label(root,text='', font=("Helvetica 10"), wraplength=600, justify="left")
@@ -264,7 +261,7 @@ cfgButton = ttk.Button(root, text="Edit .cfg", width=10, command=open_config_fil
 cfgButton.place(x=425, y=400)
 
 
-
+# Initial transaction check when program starts
 check_transactions()
 # Start checking for a new block
 check_newblock() # main application logic loop
